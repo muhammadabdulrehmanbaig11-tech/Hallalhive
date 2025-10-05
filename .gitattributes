@@ -1,0 +1,18 @@
+# Auto-normalize text files for cross-platform consistency
+* text=auto eol=lf
+
+# Specific file types that must stay LF
+*.js text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.gql text eol=lf
+*.graphql text eol=lf
+*.html text eol=lf
+*.sh text eol=lf
+*.cjs text eol=lf
