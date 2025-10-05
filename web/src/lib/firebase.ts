@@ -1,21 +1,36 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// src/lib/firebase.ts
+import { initializeApp } from "firebase/app"
+import { getAuth } from "firebase/auth"
+import { getFirestore } from "firebase/firestore"
+import { getAnalytics, isSupported, Analytics } from "firebase/analytics"
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCTdinFIbzMgWI0ZXqvjyee6bEM89Jjr1A",
-  authDomain: "halalhive-1.firebaseapp.com",
-  projectId: "halalhive-1",
-  storageBucket: "halalhive-1.firebasestorage.app",
-  messagingSenderId: "1030529190896",
-  appId: "1:1030529190896:web:2b3b1181f7aae006fcab35",
-  measurementId: "G-J4S9RZ5XRM"
-};
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID, // optional
+}
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Initialize app only once
+const app = initializeApp(firebaseConfig)
+
+// Export singletons
+export const auth = getAuth(app)
+export const db = getFirestore(app)
+
+// Lazy analytics init
+let analytics: Analytics | null = null
+
+if (typeof window !== "undefined") {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app)
+    }
+  })
+}
+
+export { analytics }
+export default app
