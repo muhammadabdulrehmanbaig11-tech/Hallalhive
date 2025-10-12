@@ -1,9 +1,9 @@
-// src/components/VendorCard.tsx
-export default function VendorCard({ name, category }: { name: string; category: string }) {
+export default function VendorCard({ vendor }: { vendor: any }) {
+  const cats = Array.isArray(vendor.categories) ? vendor.categories.join(", ") : vendor.categories;
   return (
-    <div className="card bg-base-100 shadow-md p-4 border border-base-300">
-      <h3 className="text-lg font-bold">{name}</h3>
-      <p className="text-sm text-gray-500">{category}</p>
+    <div className="border rounded-lg p-4 shadow-sm hover:shadow-md transition bg-base-100">
+      <h3 className="font-semibold text-lg">{vendor.storeName}</h3>
+      <p className="text-sm text-gray-500 mt-1">{cats}</p>
     </div>
   );
 }
