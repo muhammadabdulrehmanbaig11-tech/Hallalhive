@@ -1,20 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
-
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState("halalhive");
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
-
+  const toggle = () => {
+    const el = document.documentElement
+    const current = el.getAttribute("data-theme") || "halalhive"
+    el.setAttribute("data-theme", current === "halalhive" ? "halalhive-dark" : "halalhive")
+  }
   return (
-    <button
-      className="btn btn-sm btn-outline"
-      onClick={() =>
-        setTheme(theme === "halalhive" ? "light" : "halalhive")
-      }
-    >
-      {theme === "halalhive" ? "☀ Light" : "🌙 Dark"}
+    <button className="btn btn-sm" onClick={toggle} aria-label="Toggle theme">
+      🌓
     </button>
-  );
+  )
 }
