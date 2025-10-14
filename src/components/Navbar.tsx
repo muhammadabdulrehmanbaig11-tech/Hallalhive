@@ -1,27 +1,22 @@
 "use client";
-
-import ThemeToggle from "./ThemeToggle";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
-  return (
-    <div className="navbar bg-base-100 px-4">
-      {/* Left: Brand */}
-      <div className="flex-1">
-        <Link href="/" className="text-xl font-bold text-primary">
-          HalalHive
-        </Link>
-      </div>
+  const { user, role, logout } = useAuth();
 
-      {/* Right: Links + Theme Toggle */}
-      <div className="flex-none flex items-center gap-4">
-        <Link href="/vendors" className="text-sm font-medium hover:underline">
-          Vendors
-        </Link>
-        <Link href="/products" className="text-sm font-medium hover:underline">
-          Products
-        </Link>
-        <ThemeToggle />
+  return (
+    <div className="navbar bg-base-100 shadow-sm">
+      <div className="flex-1">
+        <Link href="/" className="btn btn-ghost text-xl">HalalHive</Link>
+      </div>
+      <div className="flex-none gap-2">
+        {role === "vendor" && <Link href="/vendor/dashboard" className="btn btn-primary btn-sm">Dashboard</Link>}
+        {!user ? (
+          <Link href="/auth-test" className="btn btn-outline btn-sm">Login</Link>
+        ) : (
+          <button className="btn btn-outline btn-sm" onClick={logout}>Logout</button>
+        )}
       </div>
     </div>
   );

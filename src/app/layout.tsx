@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import Navbar from "@/components/Navbar";
 import { ReactNode } from "react";
+import { AuthProvider } from "@/context/AuthContext";
 
 // ✅ Font setup
 const geistSans = Geist({
@@ -22,13 +23,15 @@ export const metadata: Metadata = {
   description: "AI-powered halal marketplace",
 };
 
-// ✅ Layout
+// ✅ Combined layout (fonts + navbar + auth context)
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" data-theme="halalhive" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased bg-base-100 text-base-content">
-        <Navbar />
-        <main className="p-6">{children}</main>
+        <AuthProvider>
+          <Navbar />
+          <main className="p-6">{children}</main>
+        </AuthProvider>
       </body>
     </html>
   );
