@@ -1,18 +1,12 @@
 {
-  "compileOnSave": true,
-  "include": [
-    "src"
-  ],
   "compilerOptions": {
-    "module": "NodeNext",
-    "noImplicitReturns": true,
+    "target": "ES2020",
+    "module": "ES2020",
     "outDir": "lib",
-    "sourceMap": true,
-    "strict": true,
-    "target": "es2017",
-    "skipLibCheck": true,
+    "moduleResolution": "Node",
     "esModuleInterop": true,
-    "moduleResolution": "nodenext",
-    "noUnusedLocals": true
-  }
+    "skipLibCheck": true,
+    "strict": true
+  },
+  "include": ["src"]
 }

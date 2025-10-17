@@ -1,12 +1,18 @@
 {
-  "firestore": {
-    "rules": "firestore.rules"
-  },
   "functions": {
+    "runtime": "nodejs20",
     "source": "functions"
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "hosting": {
     "public": "out",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
   }
 }
