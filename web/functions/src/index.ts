@@ -1,6 +1,6 @@
-import * as functions from "firebase-functions";
-
-// 🐝 Test Cloud Function — just returns a string
-export const helloWorld = functions.https.onRequest((req, res) => {
-  res.status(200).send("Hello from HalalHive Functions!");
-});
+declare module 'slugify' {
+  export default function slugify(
+    string: string,
+    options?: { lower?: boolean; strict?: boolean }
+  ): string;
+}
