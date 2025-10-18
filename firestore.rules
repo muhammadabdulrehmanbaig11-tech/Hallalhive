@@ -1,46 +1,69 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---- Helper functions ----
+    // ---------- Helper functions ----------
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function hasRole(r) {
-      return isSignedIn() && request.auth.token.role == r;
+    // Support either a string role or a boolean admin claim
+    function hasRole(role) {
+      return isSignedIn() && request.auth.token.role == role;
     }
 
     function isAdmin() {
-      return hasRole('admin');
+      return isSignedIn() &&
+             (request.auth.token.admin == true || request.auth.token.role == 'admin');
     }
 
     function isVendorOwner(vId) {
-      return isSignedIn() && request.auth.token.vendorId == vId && hasRole('vendor');
+      return isSignedIn() &&
+             request.auth.token.vendorId == vId &&
+             hasRole('vendor');
     }
 
-    // ---- Public read-only vendor projections ----
+    // ---------- Public read-only vendor projections ----------
+    // e.g., safe fields for storefront/vendor listing pages
     match /public_vendors/{vendorId} {
-      allow read: if true;        // anyone can read
-      allow write: if false;      // only Cloud Functions can write
+      allow read: if true;           // anyone can read
+      allow write: if false;         // only server/Admin SDK/Cloud Functions write
     }
 
-    // ---- Private vendor data (owner + admin) ----
+    // ---------- Private vendor data (owner + admin) ----------
     match /vendors/{vendorId} {
+      // Owners (with role 'vendor' and matching vendorId) or admins
       allow read: if isAdmin() || isVendorOwner(vendorId);
       allow create, update: if isAdmin() || isVendorOwner(vendorId);
-      allow delete: if isAdmin();
+      allow delete: if isAdmin();    // only admins can delete vendor docs
     }
 
-    // ---- Admin-only global stats ----
+    // ---------- Admin-only global stats ----------
     match /stats/{docId} {
       allow read: if isAdmin();
-      allow write: if false;  // Cloud Functions handle writes
+      allow write: if false;         // write via backend jobs/Cloud Functions
     }
 
     match /stats_history/{docId} {
       allow read: if isAdmin();
-      allow write: if false;
+      allow write: if false;         // write via backend jobs/Cloud Functions
+    }
+
+    // ---------- Catalog: public read, admin-only writes ----------
+    match /categories/{id} {
+      allow read: if true;           // storefront can read
+      allow write: if isAdmin();     // only admins manage categories
+    }
+
+    match /products/{id} {
+      allow read: if true;           // storefront can read
+      allow write: if isAdmin();     // only admins manage products
+    }
+
+    // ---------- Default catch-all (deny) ----------
+    match /{path=**} {
+      allow read, write: if false;
     }
   }
 }

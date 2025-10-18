@@ -1,0 +1,88 @@
+# ============ FIX AWS CLI + RUN SETUP ============
+
+# 0) Be in your project folder (optional)
+Set-Location "C:\Users\aszaf\Documents\Halal Hive Web\web"
+
+# 1) Quick check: do we already have aws in PATH?
+$awsCmd = Get-Command aws -ErrorAction SilentlyContinue
+
+if (-not $awsCmd) {
+  Write-Host "AWS CLI not found in PATH. Installing..."
+
+  # Prefer winget if present; else download MSI
+  if (Get-Command winget -ErrorAction SilentlyContinue) {
+    winget install -e --id Amazon.AWSCLI --source winget --silent
+  } else {
+    $msi = Join-Path $env:TEMP "AWSCLIV2.msi"
+    Invoke-WebRequest "https://awscli.amazonaws.com/AWSCLIV2.msi" -OutFile $msi
+    Start-Process msiexec.exe -Wait -ArgumentList "/i `"$msi`" /qn /norestart"
+    Remove-Item $msi -Force
+  }
+
+  # 2) Verify the actual exe path
+  $AwsDirCandidates = @(
+    "C:\Program Files\Amazon\AWSCLIV2",
+    "C:\Program Files (x86)\Amazon\AWSCLIV2"
+  )
+
+  $AwsExe = $null
+  foreach ($dir in $AwsDirCandidates) {
+    if (Test-Path (Join-Path $dir "aws.exe")) { $AwsExe = (Join-Path $dir "aws.exe"); break }
+  }
+
+  if (-not $AwsExe) {
+    # Sometimes aws.exe is under \v2\ subfolder
+    foreach ($dir in $AwsDirCandidates) {
+      if (Test-Path (Join-Path $dir "v2\aws.exe")) { $AwsExe = (Join-Path $dir "v2\aws.exe"); break }
+    }
+  }
+
+  if (-not $AwsExe) {
+    Write-Error "AWS CLI installed but aws.exe not found in expected locations. Please check 'C:\Program Files\Amazon\AWSCLIV2'."
+    return
+  }
+
+  # 3) Ensure PATH has the directory (not just the exe)
+  $AwsBinDir = Split-Path $AwsExe -Parent
+
+  # Persist for current user
+  $currentUserPath = [System.Environment]::GetEnvironmentVariable('Path','User')
+  if ($currentUserPath -notlike "*$AwsBinDir*") {
+    setx PATH "$currentUserPath;$AwsBinDir" | Out-Null
+  }
+
+  # Update PATH for this session immediately
+  $env:PATH = "$env:PATH;$AwsBinDir"
+}
+
+# 4) Final verify in this session
+try {
+  aws --version | Out-Host
+} catch {
+  # One more PATH refresh fallback
+  $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' +
+              [System.Environment]::GetEnvironmentVariable('Path','User')
+  aws --version | Out-Host
+}
+
+# 5) Configure credentials if missing
+$credPath = Join-Path $env:USERPROFILE ".aws\credentials"
+if (-not (Test-Path $credPath)) {
+  Write-Host "`nNo AWS creds yet. Running 'aws configure' (enter your keys, region eu-west-2, output json)..."
+  aws configure
+}
+
+# 6) Quick identity sanity-check
+aws sts get-caller-identity | Out-Host
+
+# 7) Run your S3 setup script (must exist in current folder)
+if (Test-Path ".\setup-s3.ps1") {
+  Write-Host "`nRunning setup-s3.ps1..."
+  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+  .\setup-s3.ps1
+} else {
+  Write-Warning "setup-s3.ps1 not found in $(Get-Location). Create it (or tell me to paste it again)."
+}
+
+Write-Host "`n✅ Done. If you saw 'aws-cli/..' and no errors, you are set."
+# =================================================
